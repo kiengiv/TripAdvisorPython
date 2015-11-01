@@ -18,7 +18,7 @@ except:
                    + b"," + b"Rating"   + b"\n")
 
 #List the first page of the reviews (ends with "#REVIEWS") - separate the websites with ,
-WebSites=["http://www.tripadvisor.ca/ShowUserReviews-g499298-d3564349-r319426629-St_Jacobs_Schoolhouse_Theatre-St_Jacobs_Region_of_Waterloo_Ontario.html#REVIEWS"]
+WebSites=["http://www.tripadvisor.ca/ShowUserReviews-g154985-d4273138-r320070398-Dunfield_Theatre_Cambridge-Cambridge_Region_of_Waterloo_Ontario.html#REVIEWS"]
 #looping through each site until it hits a break
 for theurl in WebSites:
     thepage = urllib.request.urlopen(theurl)
@@ -92,7 +92,7 @@ for theurl in WebSites:
 #extract the visit month for each review
         visitarray=""
         for temp in soup.findAll(attrs={"class":"innerBubble"}):
-            visit=temp.text.split("Was this review helpful",1)[0].strip()[-16:].split(' ',1)[1]
+            visit=temp.text.split("Helpful?",1)[0].strip()[-16:].split(' ',1)[1]
             if len(visitarray)==0:
                 if len(visit.strip())==0 or visit.count("20")<1:
                     visitarray=["N/A"]
