@@ -18,12 +18,11 @@ except:
                    + b"," + b"Rating"   + b"\n")
 
 #List the first page of the reviews (ends with "#REVIEWS") - separate the websites with ,
-WebSites=["http://www.tripadvisor.ca/ShowUserReviews-g499298-d3564349-r240868655-St_Jacobs_Schoolhouse_Theatre-St_Jacobs_Region_of_Waterloo_Ontario.html#REVIEWS"]
-
+WebSites=["http://www.tripadvisor.ca/ShowUserReviews-g499298-d3564349-r319426629-St_Jacobs_Schoolhouse_Theatre-St_Jacobs_Region_of_Waterloo_Ontario.html#REVIEWS"]
 #looping through each site until it hits a break
 for theurl in WebSites:
     thepage = urllib.request.urlopen(theurl)
-    soup=BeautifulSoup(thepage)
+    soup=BeautifulSoup(thepage, "html.parser")
     while True:
 
 #extract the help count, restaurant review count, attraction review count and hotel review count
@@ -138,7 +137,7 @@ for theurl in WebSites:
                        bytes(Location, encoding="ascii",errors='ignore') +b"," + bytes(RatingDate, encoding="ascii",errors='ignore') +b"," +
                        bytes(Visited, encoding="ascii",errors='ignore') +b"," + bytes(Rating, encoding="ascii",errors='ignore') +b"\n" )
 
-        link=soup.find_all(attrs={"class":"nav next rndBtn rndBtnGreen taLnk"})
+        link=soup.find_all(attrs={"class":"nav next rndBtn ui_button primary taLnk"})
         print(Organization)
         if len(link)==0:
             break
@@ -147,3 +146,4 @@ for theurl in WebSites:
             print(link[0].get('href'))
      
 file.close()
+
