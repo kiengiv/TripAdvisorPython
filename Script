@@ -145,3 +145,4 @@ for theurl in WebSites:
             print(link[0].get('href'))
             Checker=link[0].get('href')[-7:]
      
+file.close()
