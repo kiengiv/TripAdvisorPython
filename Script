@@ -6,19 +6,18 @@ import urllib, csv, os, datetime, urllib.request, re, sys
 
 #creating CSV file to be used 
 try:
-	file = open(os.path.expanduser(r"~/Desktop/TripAdviser Reviews.csv"), "wb")
-	file.write(b"Organization" + b"," + b"Address" + b"," + b"Reviewer" + b"," + b"Review Title" + b"," + b"Review" + b"," + b"Review Count" + b"," + b"Help Count"
-                   + b"," + b"Attraction Count" + b"," + b"Restaurant Count" + b"," + b"Hotel Count" + b","  + b"Location" + b"," + b"Rating Date"  + b"," + b"Visited"
+	file = open(os.path.expanduser(r"C:/Users/kiv/Desktop/TripAdviser Reviews.csv"), "wb")
+	file.write(b"Organization,Address,Reviewer,Review Title,Review,Review Count,Help Count,Attraction Count,Restaurant Count,Hotel Count,Location,Rating Date,Visited"
                    + b"," + b"Rating"  + b"\n")
 except:
 	os.remove(os.path.expanduser(r"~/Desktop/TripAdviser.csv"))
 	file = open(os.path.expanduser(r"~/Desktop/TripAdviser.csv"), "wb")
-	file.write(b"Organization" + b"," + b"Address" + b"," + b"Reviewer" + b"," + b"Review Title" + b"," + b"Review" + b"," + b"Review Count" + b"," + b"Help Count"
-                   + b"," + b"Attraction Count" + b"," + b"Restaurant Count" + b"," + b"Hotel Count"  + b"," + b"Location" + b"," + b"Rating Date"  + b"," + b"Visited"
-                   + b"," + b"Rating"   + b"\n")
+	file.write(b"Organization,Address,Reviewer,Review Title,Review,Review Count,Help Count,Attraction Count,Restaurant Count,Hotel Count,Location,Rating Date,Visited"
+
+Checker="REVIEWS"
 
 #List the first page of the reviews (ends with "#REVIEWS") - separate the websites with ,
-WebSites=["http://www.tripadvisor.ca/ShowUserReviews-g154985-d4273138-r320070398-Dunfield_Theatre_Cambridge-Cambridge_Region_of_Waterloo_Ontario.html#REVIEWS"]
+WebSites=["https://www.tripadvisor.ca/ShowUserReviews-g154985-d4273138-r334009689-Dunfield_Theatre_Cambridge-Cambridge_Region_of_Waterloo_Ontario.html#REVIEWS"]
 #looping through each site until it hits a break
 for theurl in WebSites:
     thepage = urllib.request.urlopen(theurl)
@@ -129,21 +128,22 @@ for theurl in WebSites:
             AttractionCount = attractionarray[x]
             Restaurant=restaurantarray[x]
             Hotel=hotelarray[x]
-            file.write(bytes(Organization, encoding="ascii",errors='ignore') +b"," + bytes(Address, encoding="ascii",errors='ignore') +b"," +
-                       bytes(Reviewer, encoding="ascii",errors='ignore') +b"," + bytes(ReviewTitle, encoding="ascii",errors='ignore') +b"," +
-                       bytes(Review, encoding="ascii",errors='ignore') +b"," + bytes(ReviewCount, encoding="ascii",errors='ignore') +b"," +
-                       bytes(HelpCount, encoding="ascii",errors='ignore') +b"," + bytes(AttractionCount, encoding="ascii",errors='ignore') +b","  +
-                       bytes(Restaurant, encoding="ascii",errors='ignore') +b","  + bytes(Hotel, encoding="ascii",errors='ignore') +b"," +
-                       bytes(Location, encoding="ascii",errors='ignore') +b"," + bytes(RatingDate, encoding="ascii",errors='ignore') +b"," +
-                       bytes(Visited, encoding="ascii",errors='ignore') +b"," + bytes(Rating, encoding="ascii",errors='ignore') +b"\n" )
+            if Checker=="REVIEWS":
+                file.write(bytes(Organization, encoding="ascii",errors='ignore') +b"," + bytes(Address, encoding="ascii",errors='ignore') +b"," +
+                           bytes(Reviewer, encoding="ascii",errors='ignore') +b"," + bytes(ReviewTitle, encoding="ascii",errors='ignore') +b"," +
+                           bytes(Review, encoding="ascii",errors='ignore') +b"," + bytes(ReviewCount, encoding="ascii",errors='ignore') +b"," +
+                           bytes(HelpCount, encoding="ascii",errors='ignore') +b"," + bytes(AttractionCount, encoding="ascii",errors='ignore') +b","  +
+                           bytes(Restaurant, encoding="ascii",errors='ignore') +b","  + bytes(Hotel, encoding="ascii",errors='ignore') +b"," +
+                           bytes(Location, encoding="ascii",errors='ignore') +b"," + bytes(RatingDate, encoding="ascii",errors='ignore') +b"," +
+                           bytes(Visited, encoding="ascii",errors='ignore') +b"," + bytes(Rating, encoding="ascii",errors='ignore') +b"\n" )
 
         link=soup.find_all(attrs={"class":"nav next rndBtn ui_button primary taLnk"})
         print(Organization)
+        print(link[0].text)
         if len(link)==0:
             break
         else:     
             soup=BeautifulSoup(urllib.request.urlopen("http://www.tripadvisor.ca" + link[0].get('href')))
             print(link[0].get('href'))
+            Checker=link[0].get('href')[-7:]
      
-file.close()
-
