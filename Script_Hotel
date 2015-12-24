@@ -17,7 +17,7 @@ except:
 
 #List the first page of the reviews (ends with "#REVIEWS") - separate the websites with ,
 WebSites=["http://www.tripadvisor.ca/Hotel_Review-g190479-d3587956-Reviews-The_Thief-Oslo_Eastern_Norway.html#REVIEWS"]
-
+Checker="REVIEWS"
 #looping through each site until it hits a break
 for theurl in WebSites:
     thepage = urllib.request.urlopen(theurl)
@@ -111,7 +111,8 @@ for theurl in WebSites:
             AttractionCount = attractionarray[x]
             Restaurant=restaurantarray[x]
             Hotel=hotelarray[x]
-            file.write(bytes(Organization, encoding="ascii",errors='ignore') +b"," + bytes(Address, encoding="ascii",errors='ignore') +b"," +
+            if Checker=="REVIEWS":
+                file.write(bytes(Organization, encoding="ascii",errors='ignore') +b"," + bytes(Address, encoding="ascii",errors='ignore') +b"," +
                        bytes(Reviewer, encoding="ascii",errors='ignore') +b"," + bytes(ReviewTitle, encoding="ascii",errors='ignore') +b"," +
                        bytes(Review, encoding="ascii",errors='ignore') +b"," + bytes(ReviewCount, encoding="ascii",errors='ignore') +b"," +
                        bytes(HelpCount, encoding="ascii",errors='ignore') +b"," + bytes(AttractionCount, encoding="ascii",errors='ignore') +b","  +
@@ -126,5 +127,7 @@ for theurl in WebSites:
         else:     
             soup=BeautifulSoup(urllib.request.urlopen("http://www.tripadvisor.com" + link[0].get('href')))
             print(link[0].get('href'))
+            Checker=link[0].get('href')[-7:]
+     
      
 file.close()
