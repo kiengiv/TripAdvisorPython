@@ -6,7 +6,7 @@ import urllib, csv, os, datetime, urllib.request, re, sys
 
 #creating CSV file to be used 
 try:
-	file = open(os.path.expanduser(r"C:/Users/kiv/Desktop/TripAdviser Reviews.csv"), "wb")
+	file = open(os.path.expanduser(r"~/Desktop/TripAdviser Reviews.csv"), "wb")
 	file.write(b"Organization,Address,Reviewer,Review Title,Review,Review Count,Help Count,Attraction Count,Restaurant Count,Hotel Count,Location,Rating Date,Visited"
                    + b"," + b"Rating"  + b"\n")
 except:
