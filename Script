@@ -138,7 +138,6 @@ for theurl in WebSites:
 
         link=soup.find_all(attrs={"class":"nav next rndBtn ui_button primary taLnk"})
         print(Organization)
-        print(link[0].text)
         if len(link)==0:
             break
         else:     
