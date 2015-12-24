@@ -11,8 +11,8 @@ try:
 except:
 	os.remove(os.path.expanduser(r"~/Desktop/TripAdviser.csv"))
 	file = open(os.path.expanduser(r"~/Desktop/TripAdviser.csv"), "wb")
-	file.write(b"Organization,Address,Reviewer,Review Title,Review,Review Count,Help Count,Attraction Count,Restaurant Count,Hotel Count,Location,Rating Date,Visited"
-
+	file.write(b"Organization,Address,Reviewer,Review Title,Review,Review Count,Help Count,Attraction Count,Restaurant Count,Hotel Count,Location,Rating Date,Visited,Rating"  + b"\n")
+	
 Checker="REVIEWS"
 
 #List the first page of the reviews (ends with "#REVIEWS") - separate the websites with ,
