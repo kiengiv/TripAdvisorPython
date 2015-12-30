@@ -1,148 +1,133 @@
-#tripadvisor Scrapper
+# Created by Kieng Iv to extract weather data from http://www.wunderground.com
 
-#importing libraries
+# Importing the necessary modules
 from bs4 import BeautifulSoup
-import urllib, csv, os, datetime, urllib.request, re, sys
+import urllib
+import urllib.request
+import os
 
-#creating CSV file to be used 
-try:
-	file = open(os.path.expanduser(r"~/Desktop/TripAdviser Reviews.csv"), "wb")
-	file.write(b"Organization,Address,Reviewer,Review Title,Review,Review Count,Help Count,Attraction Count,Restaurant Count,Hotel Count,Location,Rating Date,Visited,Rating"  + b"\n")
-except:
-	os.remove(os.path.expanduser(r"~/Desktop/TripAdviser.csv"))
-	file = open(os.path.expanduser(r"~/Desktop/TripAdviser.csv"), "wb")
-	file.write(b"Organization,Address,Reviewer,Review Title,Review,Review Count,Help Count,Attraction Count,Restaurant Count,Hotel Count,Location,Rating Date,Visited,Rating"  + b"\n")
-	
-Checker="REVIEWS"
+# Defining a function to assess how similar the billboard artist is vs lyrics artist
+def similar(w1, w2):
+    w1 = w1 + ' ' * (len(w2) - len(w1))
+    w2 = w2 + ' ' * (len(w1) - len(w2))
+    return sum([1 if i == j else 0 for i, j in zip(w1, w2)]) / float(len(w1))
 
-#List the first page of the reviews (ends with "#REVIEWS") - separate the websites with ,
-WebSites=["https://www.tripadvisor.ca/ShowUserReviews-g154985-d4273138-r334009689-Dunfield_Theatre_Cambridge-Cambridge_Region_of_Waterloo_Ontario.html#REVIEWS"]
-#looping through each site until it hits a break
-for theurl in WebSites:
+# defining the file path
+os.makedirs(r"Artist", exist_ok=True)
+filepath = r"Artist/"
+
+# write the program to a CSV file
+file = open(os.path.expanduser(filepath + "Artist_Data.csv"), "wb")
+file.write(b"Year,Rank,Artist,Song,Lyrics,Views,Words" + b"\n")
+
+# looping through years
+for year in range(2006, 2016):
+    # creating the soup file to scrape from the billboard file
+    theurl = "http://www.billboard.com/charts/year-end/" + str(year) + "/hot-100-songs"
     thepage = urllib.request.urlopen(theurl)
-    soup=BeautifulSoup(thepage, "html.parser")
-    while True:
+    soup = BeautifulSoup(thepage, "html.parser")
+    for temp in soup.find_all(attrs={"class": "row-primary"}):
+        # scraping rank, song title and artist name from Billboard website
+        rank = temp.find(attrs={"class": "this-week"}).text
+        song = temp.find(attrs={"class": "row-title"}).find('h2').text.replace('\n', '').replace('\t', '').strip()
+        artist = temp.find(attrs={"class": "row-title"}).find('h3').text.replace('\n', '').replace('\t', '').strip()
+        print(rank + "_" + song + "_" + artist)
 
-#extract the help count, restaurant review count, attraction review count and hotel review count
-        a=b=0
-        helpcountarray=restaurantarray=attractionarray=hotelarray=""
-        
-        for profile in soup.findAll(attrs={"class":"memberBadging g10n"}):
-            image=profile.text.replace("\n","|||||").strip()
-            if image.find("helpful vote")>0:
-                counter=image.split("helpful vote",1)[0].split("|",1)[1][-4:].replace("|","").strip()
-                if len(helpcountarray)==0:
-                    helpcountarray=[counter]
-                else:
-                    helpcountarray.append(counter)
-            elif image.find("helpful vote")<0:
-                if len(helpcountarray)==0:
-                    helpcountarray=["0"]
-                else:
-                    helpcountarray.append("0")
- 
-            if image.find("attraction")>0:
-                counter=image.split("attraction",1)[0].split("|",1)[1][-4:].replace("|","").strip()
-                if len(attractionarray)==0:
-                    attractionarray=[counter]
-                else:
-                    attractionarray.append(counter)
-            elif image.find("attraction")<0:
-                if len(attractionarray)==0:
-                    attractionarray=["0"]
-                else:
-                    attractionarray.append("0")
-                    
-            if image.find("restaurant")>0:
-                counter=image.split("restaurant",1)[0].split("|",1)[1][-4:].replace("|","").strip()
-                if len(restaurantarray)==0:
-                    restaurantarray=[counter]
-                else:
-                    restaurantarray.append(counter)
-            elif image.find("restaurant")<0:
-                if len(restaurantarray)==0:
-                    restaurantarray=["0"]
-                else:
-                    restaurantarray.append("0")
+        # Get the picture from the billboard website
+        try:
+            Image = temp.find(attrs={"class": "row-image"}).get('style')[22:].replace(")", "")
+        except:
+            Image = temp.find(attrs={"class": "row-image"}).get('data-imagesrc')
 
-            if image.find("hotel")>0:
-                counter=image.split("hotel",1)[0].split("|",1)[1][-4:].replace("|","").strip()
-                if len(hotelarray)==0:
-                    hotelarray=[counter]
-                else:
-                    hotelarray.append(counter)
-            elif image.find("hotel")<0:
-                if len(hotelarray)==0:
-                    hotelarray=["0"]
-                else:
-                    hotelarray.append("0") 
-            
-#extract the rating count for each user review
-        altarray=""
-        for rating in soup.findAll(attrs={"class":"rating reviewItemInline"}):
-            alt=rating.find('img',alt=True)['alt']
-            if alt[-5:]=='stars':
-                if len(altarray)==0:
-                    altarray=[alt]
-                else:
-                    altarray.append(alt)
+        # Save the picture files to your desktop
+        try:
+            f = open(filepath + str(year)+"-" + rank + ".jpeg", 'wb')
+            f.write(urllib.request.urlopen(Image).read())
+            f.close()
+        except:
+            pass
 
-#extract the visit month for each review
-        visitarray=""
-        for temp in soup.findAll(attrs={"class":"innerBubble"}):
-            visit=temp.text.split("Helpful?",1)[0].strip()[-16:].split(' ',1)[1]
-            if len(visitarray)==0:
-                if len(visit.strip())==0 or visit.count("20")<1:
-                    visitarray=["N/A"]
-                else:
-                    visitarray=[visit.strip()]
-            else:
-                if len(visit.strip())==0 or visit.count("20")<1:
-                    visitarray.append("N/A")
-                else:
-                    visitarray.append(visit.strip())
-                
-            
-        Organization = soup.find(attrs={"class":"altHeadInline"}).text.replace('"',' ').replace('Review of',' ').strip()
-        Address = soup.findAll(attrs={"class":"format_address"})[0].text.replace(',','').replace('\n','').strip()
-
-#Loop through each review on the page
-        for x in range(0,len(hotelarray)):
+        # Search the lyrics on lyricsfreak.com - find the href link
+        lookup = song.replace(" ", "+").replace('&', '%26')
+        theurl2 = ("http://www.lyricsfreak.com/search.php?a=search&type=song&q=" + lookup)
+        thepage2 = urllib.request.urlopen(theurl2)
+        soup2 = BeautifulSoup(thepage2, "html.parser")
+        for row in soup2.find_all('tr'):
             try:
-                Reviewer = soup.findAll(attrs={"class":"username mo"})[x].text
+                webartist = row.find('td').text.replace('·', '').strip()
+                similarity = similar(webartist, artist[:len(webartist)])
+                if similarity > 0.8:
+                    lookup2 = row.find_all('td')[1].find('a').get('href')
+                    break
+                elif similarity > 0.5:
+                    lookup2 = row.find_all('td')[1].find('a').get('href')
+                    break
             except:
-                Reviewer = "N/A"
-                continue
-                
-            Reviewer = Reviewer.replace(',',' ').replace('”', '').replace('“', '').replace('"', '').strip()
-            ReviewCount = soup.findAll(attrs={"class":"reviewerBadge badge"})[x].text.split(' ',1)[0].strip()   
-            Location = soup.findAll(attrs={"class":"location"})[x].text.replace(',',' ').strip()
-            ReviewTitle = soup.findAll(attrs={"class":"quote"})[x].text.replace(',',' ').replace('”', '').replace('“', '').replace('"', '').replace('é', 'e').strip()       
-            Review = soup.findAll(attrs={"class":"entry"})[x].text.replace(',',' ').replace('\n',' ').strip()
-            RatingDate = soup.findAll(attrs={"class":"ratingDate"})[x].text.replace('Reviewed',' ').replace('NEW',' ').replace(',',' ').strip()
+                pass
 
-            Visited = visitarray[x].strip()
-            Rating = altarray[x][:1]
-            HelpCount = helpcountarray[x]
-            AttractionCount = attractionarray[x]
-            Restaurant=restaurantarray[x]
-            Hotel=hotelarray[x]
-            if Checker=="REVIEWS":
-                file.write(bytes(Organization, encoding="ascii",errors='ignore') +b"," + bytes(Address, encoding="ascii",errors='ignore') +b"," +
-                           bytes(Reviewer, encoding="ascii",errors='ignore') +b"," + bytes(ReviewTitle, encoding="ascii",errors='ignore') +b"," +
-                           bytes(Review, encoding="ascii",errors='ignore') +b"," + bytes(ReviewCount, encoding="ascii",errors='ignore') +b"," +
-                           bytes(HelpCount, encoding="ascii",errors='ignore') +b"," + bytes(AttractionCount, encoding="ascii",errors='ignore') +b","  +
-                           bytes(Restaurant, encoding="ascii",errors='ignore') +b","  + bytes(Hotel, encoding="ascii",errors='ignore') +b"," +
-                           bytes(Location, encoding="ascii",errors='ignore') +b"," + bytes(RatingDate, encoding="ascii",errors='ignore') +b"," +
-                           bytes(Visited, encoding="ascii",errors='ignore') +b"," + bytes(Rating, encoding="ascii",errors='ignore') +b"\n" )
+        # Use the looked up href to find the page with the lyrics
+        theurl3 = ("www.lyricsfreak.com/" + lookup2).replace(r"//", r"/")
+        thepage3 = urllib.request.urlopen("http://" + theurl3)
+        soup3 = BeautifulSoup(thepage3, "html.parser")
 
-        link=soup.find_all(attrs={"class":"nav next rndBtn ui_button primary taLnk"})
-        print(Organization)
-        if len(link)==0:
-            break
-        else:     
-            soup=BeautifulSoup(urllib.request.urlopen("http://www.tripadvisor.ca" + link[0].get('href')))
-            print(link[0].get('href'))
-            Checker=link[0].get('href')[-7:]
-     
+        # Resetting variables
+        lyrics = ""
+        line = ""
+        j = 1
+
+        # Find combine the lyric lines to one field
+        try:
+            for temp2 in soup3.find_all('div', {'id': 'content_h'})[0].find_all('br'):
+                line = temp2.text.strip().replace(',', ' ')
+                if j != 1:
+                    linenew = lineprev[:-len(line)]
+                    lyrics = lyrics + " " + linenew
+                else:
+                    j = j + 1
+                lineprev = line
+            lyrics = lyrics + line
+
+            if len(lyrics)==0:
+                lyrics="Not available"
+
+        except:
+            lyrics = "Not available"
+
+        # Obtaining YouTube views for each video
+        theurl4 = "https://www.youtube.com/results?search_query=" + (song.replace('&', '%26') + "+" + artist).replace(" ", "+")
+        thepage4 = urllib.request.urlopen(theurl4)
+        soup4 = BeautifulSoup(thepage4, "html.parser")
+        viewarray=[]
+
+        # Since we can't be guaranteed we will find the official video, look up the first 3 videos
+        for temp5 in soup4.findAll("div",{"class":"yt-lockup-meta"}):
+            for temp6 in temp5.findAll('li'):
+                if temp6.text[-5:]=="views":
+                    if len(viewarray)==0:
+                        viewarray=[int(temp6.text.replace(',','')[:-5])]
+                    elif len(viewarray)<3:
+                        viewarray.append(int(temp6.text.replace(',','')[:-5]))
+                    else:
+                        break
+
+        # View = the highest of the 3 videos
+        views=max(viewarray)
+        i = 1
+
+        # Split the lyrics into different words
+        words = lyrics.replace('"','').split()
+        for word in words:
+            if word[:1]=="[" or word[-1:]=="]" or word[:1]=="(" or word[-1:]==")":
+                pass
+            elif i == 1:
+                CombinedString = str(year) + "," + rank + "," + artist.replace(",", "") + "," + song.replace(",",
+                                                                                             "") + "," + lyrics + "," + str(views) + "," + word.strip().upper() + "\n"
+                i = 2
+            else:
+                lyrics = ""
+                views=0
+                CombinedString = str(year) + "," + rank + "," + artist.replace(",", "") + "," + song.replace(",",
+                                                                                            "") + "," + lyrics + "," + str(views) + "," + word.strip().upper() + "\n"
+            file.write(bytes(CombinedString, encoding="ascii", errors='ignore'))
+
 file.close()
